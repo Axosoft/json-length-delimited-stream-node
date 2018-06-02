@@ -1,4 +1,4 @@
-# JSONLengthDelimitedStream
+# JSONLengthDelimitedStream [![Build Status](https://travis-ci.org/implausible/json-length-delimited-stream-node.svg?branch=master)](https://travis-ci.org/implausible/json-length-delimited-stream-node)
 Wraps a TCP Socket with a length-delimited JSON frame as a readable stream.
 
 ## Usage
