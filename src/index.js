@@ -10,7 +10,7 @@ module.exports = class JSONLengthDelimitedStream extends Readable {
 
     jsonParseStream.on('data', o => this.push(o));
 
-    let lengthDelimiterAsHexString = '';
+    let lengthDelimiterBytes = [];
     let numBytesNeeded = bigInt();
 
     const consumeChunkData = (chunk, startingIndex, endingIndex) => {
@@ -23,25 +23,23 @@ module.exports = class JSONLengthDelimitedStream extends Readable {
       let index = 0;
       while (index < chunk.length) {
         const remainingChunkSize = chunk.length - index;
-        const remainingLengthDelimiterSize = frameLengthInBytes - lengthDelimiterAsHexString.length;
+        const remainingLengthDelimiterSize = frameLengthInBytes - lengthDelimiterBytes.length;
         if (numBytesNeeded.gt(remainingChunkSize)) {
           consumeChunkData(chunk, index, index += remainingChunkSize);
         } else if (numBytesNeeded.eq(remainingChunkSize)) {
           consumeChunkData(chunk, index, index += remainingChunkSize);
-          lengthDelimiterAsHexString = '';
+          lengthDelimiterBytes = [];
         } else if (numBytesNeeded.lt(remainingChunkSize) && numBytesNeeded.gt(0)) {
           // it is expected that a chunk is never bigger than (2^16 + 1) and so in this case, we can assume our bigInt
           // will fit into a JS Number
           const bytesToGrab = numBytesNeeded.toJSNumber();
           consumeChunkData(chunk, index, index += bytesToGrab);
-          lengthDelimiterAsHexString = '';
+          lengthDelimiterBytes = [];
           numBytesNeeded = bigInt();
         } else {
-          lengthDelimiterAsHexString += Array.from(chunk.slice(index, index += remainingLengthDelimiterSize))
-            .map(byte => byte.toString(16))
-            .join('');
-          if (lengthDelimiterAsHexString.length === frameLengthInBytes) {
-            numBytesNeeded = bigInt(lengthDelimiterAsHexString, 16);
+          lengthDelimiterBytes = [...lengthDelimiterBytes, ...chunk.slice(index, index += remainingLengthDelimiterSize)];
+          if (lengthDelimiterBytes.length === frameLengthInBytes) {
+            numBytesNeeded = bigInt.fromArray(lengthDelimiterBytes, 255);
           }
         }
       }
