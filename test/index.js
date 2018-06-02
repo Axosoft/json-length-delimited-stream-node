@@ -7,7 +7,7 @@ const oneByteObject = { eight: 'bit' };
 const oneByteBuffer = Buffer.from(JSON.stringify(oneByteObject));
 
 describe('JSONLengthDelimitedStream', function() {
-  it('can parse single object from single complete chunk', async function() {
+  it('can parse single object from single complete chunk', function() {
     const socket = new EventEmitter();
     const jsonLengthDelimitedStream = new JSONLengthDelimitedStream(socket, { frameLengthInBytes: 1 });
     const singleObjectInFullBuffer = Buffer.from([0xF, ...oneByteBuffer]);
