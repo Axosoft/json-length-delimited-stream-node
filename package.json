@@ -1,6 +1,6 @@
 {
   "name": "json-length-delimited-stream",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A length-delimited JSON stream parser for TCP frames",
   "main": "src/index.js",
   "scripts": {
