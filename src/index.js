@@ -39,7 +39,7 @@ module.exports = class JSONLengthDelimitedStream extends Readable {
         } else {
           lengthDelimiterBytes = [...lengthDelimiterBytes, ...chunk.slice(index, index += remainingLengthDelimiterSize)];
           if (lengthDelimiterBytes.length === frameLengthInBytes) {
-            numBytesNeeded = bigInt.fromArray(lengthDelimiterBytes, 255);
+            numBytesNeeded = bigInt.fromArray(lengthDelimiterBytes, 256);
           }
         }
       }
