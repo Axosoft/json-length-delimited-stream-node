@@ -14,7 +14,7 @@ module.exports = class JSONLengthDelimitedStream extends Readable {
     let numBytesNeeded = bigInt();
 
     const consumeChunkData = (chunk, startingIndex, endingIndex) => {
-      jsonParseStream.write(chunk.slice(startingIndex, endingIndex));
+      jsonParseStream.write(Buffer.from(chunk.slice(startingIndex, endingIndex)));
       numBytesNeeded = numBytesNeeded.minus(endingIndex - startingIndex);
     };
 
