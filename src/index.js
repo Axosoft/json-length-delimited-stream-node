@@ -64,7 +64,7 @@ module.exports = class JSONLengthDelimitedStream extends Duplex {
       }
 
       const objectAsBuffer = Buffer.from(JSON.stringify(object));
-      const sizeInBytes = bigInt(objectAsBuffer.length).toArray(256);
+      const { value: sizeInBytes } = bigInt(objectAsBuffer.length).toArray(256);
 
       if (sizeInBytes.length > frameLengthInBytes) {
         throwError('Tried to send an object that was too big for frame');
