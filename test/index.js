@@ -87,4 +87,21 @@ describe('JSONLengthDelimitedStream', function() {
 
     expect(jsonLengthDelimitedStream.read(1)).toEqual(oneByteObject);
   });
+
+  it('can write an object', function() {
+    const socket = new EventEmitter();
+    const jsonLengthDelimitedStream = new JSONLengthDelimitedStream(socket, { frameLengthInBytes: 4 });
+
+    socket.write = (buffer) => {
+      expect([...buffer]).toEqual([...Buffer.from([
+        0,
+        0,
+        0,
+        0xF,
+        ...oneByteBuffer
+      ])]);
+
+      jsonLengthDelimitedStream.write(oneByteObject);
+    };
+  });
 });

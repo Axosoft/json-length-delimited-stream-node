@@ -1,10 +1,13 @@
 const bigInt = require('big-integer');
 const JSONStream = require('JSONStream');
-const { Readable } = require('stream');
+const { Duplex } = require('stream');
 
-module.exports = class JSONLengthDelimitedStream extends Readable {
+module.exports = class JSONLengthDelimitedStream extends Duplex {
   constructor(tcpSocket, { frameLengthInBytes = 4 } = {}) {
-    super({ objectMode: true });
+    super({
+      readableObjectMode: true,
+      writableObjectMode: true
+    });
 
     const jsonParseStream = JSONStream.parse();
 
@@ -46,7 +49,35 @@ module.exports = class JSONLengthDelimitedStream extends Readable {
     });
 
     tcpSocket.on('end', () => this.push(null));
-  }
 
-  _read() {}
+    this._write = (object, _, callback) => {
+      const throwError = (error) => {
+        if (!callback) {
+          throw error;
+        }
+        callback(error);
+      };
+
+      if (typeof object !== 'object') {
+        throwError(new Error('Writeable must be an object'));
+        return;
+      }
+
+      const objectAsBuffer = Buffer.from(JSON.stringify(object));
+      const sizeInBytes = bigInt(objectAsBuffer.length).toArray(256);
+
+      if (sizeInBytes.length > frameLengthInBytes) {
+        throwError('Tried to send an object that was too big for frame');
+        return;
+      }
+
+      while (sizeInBytes.length < frameLengthInBytes) {
+        sizeInBytes.unshift(0);
+      }
+
+      return tcpSocket.write(Buffer.from([...sizeInBytes, ...objectAsBuffer]), callback);
+    };
+
+    this._read = () => {};
+  }
 };
